@@ -1,14 +1,13 @@
 import { FC } from "react";
 
 type HeaderProps = {
-  titleName: string;
   userName: string;
 };
 
-export const Header: FC<HeaderProps> = ({ titleName, userName }) => {
+export const Header: FC<HeaderProps> = ({ userName }) => {
   return (
     <header className="header">
-      <div>{titleName}</div>
+      <div>BloodBoard</div>
       <div>{userName}</div>
     </header>
   );

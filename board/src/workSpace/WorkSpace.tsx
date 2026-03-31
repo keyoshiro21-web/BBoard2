@@ -4,11 +4,12 @@ import { AddColumnButton } from "../buttons/AddColumnButton";
 import { ColumnInput } from "../input/ColumnInput";
 import { Header } from "../components/visual";
 import { useLocation, useParams } from "react-router-dom";
+
 export const WorkSpace: FC = () => {
   const { id } = useParams();
-  const location = useLocation;
+  const location = useLocation();
 
-  // const boardName = location.state?.name || "Board";
+  const workspaceName = location.state?.name || "Workspace";
 
   const [columns, setColumns] = useState<ColumnType[]>([
     {
@@ -100,7 +101,7 @@ export const WorkSpace: FC = () => {
 
   return (
     <div>
-      <Header titleName="BloodBoard" userName="KEY" />
+      <Header userName={workspaceName} />
 
       <ColumnInput value={value} setValue={setValue} />
       <AddColumnButton onClick={createColumn} />

@@ -4,7 +4,6 @@ import { CardInput } from "../input/CardInput";
 import { FC, useState } from "react";
 import { LeftColumnButton } from "../buttons/LeftColumnButton";
 import { RightColumnButton } from "../buttons/RightColumnButton";
-import { RMVButton } from "../buttons/RMVButton";
 
 export type Task = {
   id: string;
