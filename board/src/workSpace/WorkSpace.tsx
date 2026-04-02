@@ -1,102 +1,67 @@
 import { FC, useState } from "react";
-import { Column, ColumnType } from "../components/Column";
-import { AddColumnButton } from "../buttons/AddColumnButton";
+import { Column } from "../components/Column";
+import { ActionButton, ActionButtonType } from "../buttons/ActionButton";
 import { ColumnInput } from "../input/ColumnInput";
 import { Header } from "../components/visual";
 import { useLocation, useParams } from "react-router-dom";
+import { useBoardStore } from "../store/useBoardStore";
 
 export const WorkSpace: FC = () => {
   const { id } = useParams();
   const location = useLocation();
+  const workspaceId = id ?? "";
 
-  const workspaceName = location.state?.name || "Workspace";
+  const {
+    getWorkspaceById,
+    getColumns,
+    addColumn,
+    moveColumn,
+    addTask,
+    removeTask,
+    moveTask,
+    removeColumn,
+  } = useBoardStore();
 
-  const [columns, setColumns] = useState<ColumnType[]>([
-    {
-      id: crypto.randomUUID(),
-      name: "Hui",
-      tasks: [],
-    },
-  ]);
+  const workspaceName =
+    location.state?.name || getWorkspaceById(workspaceId)?.name || "Workspace";
+
+  const columns = getColumns(workspaceId);
 
   const [value, setValue] = useState("");
 
   const createColumn = () => {
-    if (!value.trim()) return;
-    setColumns((dsrc) => [
-      ...dsrc,
-      { id: crypto.randomUUID(), name: value.trim(), tasks: [] },
-    ]);
+    if (!workspaceId || !value.trim()) return;
+    addColumn(workspaceId, value);
     setValue("");
   };
 
-  const moveColumn = (columnIndex: number, dir: "left" | "right") => {
-    const target = dir === "left" ? columnIndex - 1 : columnIndex + 1;
-    if (target < 0 || target >= columns.length) return;
-    setColumns((dsrc) => {
-      const newColumns = [...dsrc];
-      [newColumns[columnIndex], newColumns[target]] = [
-        newColumns[target],
-        newColumns[columnIndex],
-      ];
-      return newColumns;
-    });
+  const handleAddCard = (columnIndex: number, name: string) => {
+    if (!workspaceId) return;
+    addTask(workspaceId, columnIndex, name);
   };
 
-  const addCard = (columnIndex: number, name: string) => {
-    if (!name.trim()) return;
-    setColumns((src) =>
-      src.map((col, ai) =>
-        ai === columnIndex
-          ? {
-              ...col,
-              tasks: [...col.tasks, { id: crypto.randomUUID(), name }],
-            }
-          : col,
-      ),
-    );
+  const handleRemoveCard = (columnIndex: number, taskId: string) => {
+    if (!workspaceId) return;
+    removeTask(workspaceId, columnIndex, taskId);
   };
 
-  const removeCard = (columnIndex: number, taskId: string) => {
-    setColumns((src) =>
-      src.map((col, ai) =>
-        ai === columnIndex
-          ? {
-              ...col,
-              tasks: col.tasks.filter((rm) => rm.id !== taskId),
-            }
-          : col,
-      ),
-    );
-  };
-
-  const moveTask = (
+  const handleMoveTask = (
     taskId: string,
     columnIndex: number,
     dir: "left" | "right",
   ) => {
-    const target = dir === "left" ? columnIndex - 1 : columnIndex + 1;
-    if (target < 0 || target >= columns.length) return;
-
-    const task = columns[columnIndex].tasks.find((t) => t.id === taskId);
-
-    if (!task) return;
-
-    setColumns((dsrc) =>
-      dsrc.map((col, ai) => {
-        if (ai === columnIndex) {
-          return { ...col, tasks: col.tasks.filter((t) => t.id !== taskId) };
-        }
-        if (ai === target) {
-          return { ...col, tasks: [...col.tasks, task] };
-        }
-        return col;
-      }),
-    );
+    if (!workspaceId) return;
+    moveTask(workspaceId, taskId, columnIndex, dir);
   };
 
-  const removeColumn = (column: ColumnType) => {
-    setColumns((prev) => prev.filter((col) => col.id !== column.id));
+  const moveColumnHandler = (columnIndex: number, dir: "left" | "right") => {
+    if (!workspaceId) return;
+    moveColumn(workspaceId, columnIndex, dir);
+  };
+
+  const handleRemoveColumn = (columnId: string) => {
+    if (!workspaceId) return;
+    removeColumn(workspaceId, columnId);
   };
 
   return (
@@ -104,18 +69,18 @@ export const WorkSpace: FC = () => {
       <Header userName={workspaceName} />
 
       <ColumnInput value={value} setValue={setValue} />
-      <AddColumnButton onClick={createColumn} />
+      <ActionButton type={ActionButtonType.AddColumn} onClick={createColumn} />
 
       <div className="board">
         {columns.map((col, index) => (
           <Column
-            addTask={addCard}
+            addTask={handleAddCard}
             column={col}
             columnIndex={index}
-            moveColumn={moveColumn}
-            moveTask={moveTask}
-            removeTask={removeCard}
-            removeColumn={removeColumn}
+            moveColumn={moveColumnHandler}
+            moveTask={handleMoveTask}
+            removeTask={handleRemoveCard}
+            removeColumn={() => handleRemoveColumn(col.id)}
             totalColumns={columns.length}
           />
         ))}

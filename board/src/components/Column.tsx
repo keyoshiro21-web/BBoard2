@@ -1,9 +1,7 @@
 import { Card } from "./Card";
-import { AddButton } from "../buttons/AddButton";
+import { ActionButton, ActionButtonType } from "../buttons/ActionButton";
 import { CardInput } from "../input/CardInput";
 import { FC, useState } from "react";
-import { LeftColumnButton } from "../buttons/LeftColumnButton";
-import { RightColumnButton } from "../buttons/RightColumnButton";
 
 export type Task = {
   id: string;
@@ -57,16 +55,20 @@ export const Column: FC<ColumnProps> = ({
         {column.name}
         <div className="columnArrows">
           {!isFirst && (
-            <LeftColumnButton onClick={() => moveColumn(columnIndex, "left")} />
+            <ActionButton
+              type={ActionButtonType.MoveColumnLeft}
+              onClick={() => moveColumn(columnIndex, "left")}
+            />
           )}
           {!isLast && (
-            <RightColumnButton
+            <ActionButton
+              type={ActionButtonType.MoveColumnRight}
               onClick={() => moveColumn(columnIndex, "right")}
             />
           )}
         </div>
         <CardInput setValue={setValue} value={value} />
-        <AddButton onClick={handleTask} />
+        <ActionButton type={ActionButtonType.AddCard} onClick={handleTask} />
         <div className="task">
           {column.tasks.map((src) => (
             <Card
@@ -86,14 +88,10 @@ export const Column: FC<ColumnProps> = ({
             />
           ))}
         </div>
-        <button
-          type="button"
-          className="delete-btn"
+        <ActionButton
+          type={ActionButtonType.RemoveColumn}
           onClick={() => removeColumn(column)}
-          title="Видалити колонку"
-        >
-          ×
-        </button>
+        />
       </div>
     </div>
   );

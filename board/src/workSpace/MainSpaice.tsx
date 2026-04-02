@@ -1,19 +1,20 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/visual";
 import { Modal } from "../modal/Modal";
-import { AddButton } from "../buttons/AddButton";
-
-export type WorkspaceType = {
-  id: string;
-  name: string;
-};
+import { ActionButton, ActionButtonType } from "../buttons/ActionButton";
+import { useBoardStore } from "../store/useBoardStore";
 
 export const Home: FC = () => {
   const [Open, setOpen] = useState(false);
-  const [workspaces, setWorkspaces] = useState<WorkspaceType[]>([]);
   const [value, setValue] = useState("");
+
+  const workspaces = useBoardStore((state) => state.workspaces);
+  const addWorkspace = useBoardStore((state) => state.addWorkspace);
+  const removeWorkspace = useBoardStore((state) => state.removeWorkspace);
+
   const navigate = useNavigate();
+
   const trimmedValue = value.trim();
   const isValid = trimmedValue.length >= 5 && trimmedValue.length <= 30;
 
@@ -21,26 +22,29 @@ export const Home: FC = () => {
     const trimmed = value.trim();
     if (trimmed.length < 5 || trimmed.length > 30) return;
 
-    const newWs = {
-      id: crypto.randomUUID(),
-      name: trimmed,
-    };
-
-    setWorkspaces((prev) => [...prev, newWs]);
+    addWorkspace(trimmed);
     setValue("");
   };
 
   const openWorkspace = (id: string) => {
+    const workspace = workspaces.find((ws) => ws.id === id);
     navigate(`/workspace/${id}`, {
-      state: { name: workspaces.find((ws) => ws.id === id)?.name },
+      state: { name: workspace?.name },
     });
+  };
+
+  const deleteWorkspace = (id: string) => {
+    removeWorkspace(id);
   };
 
   return (
     <div>
       <Header userName="KEY" />
       <h1>Workspaces</h1>
-      <AddButton onClick={() => setOpen(true)} />
+      <ActionButton
+        type={ActionButtonType.OpenModal}
+        onClick={() => setOpen(true)}
+      />
       <Modal isOpened={Open} onClose={() => setOpen(false)}>
         <input
           className="placeholder"
@@ -51,7 +55,7 @@ export const Home: FC = () => {
         />
         {value && !isValid && (
           <p style={{ color: "red", fontSize: "12px" }}>
-            Назва повинна бути від 5 до 30 символів, тільки малі букви.
+            No less than 5 and no more than 30 symbols.
           </p>
         )}
         <button
@@ -64,12 +68,18 @@ export const Home: FC = () => {
       </Modal>
       <div className="span">
         {workspaces.map((ws) => (
-          <div key={ws.id}>
+          <div key={ws.id} className="workspace-entry">
             <button
               className="span-button"
               onClick={() => openWorkspace(ws.id)}
             >
               Open
+            </button>
+            <button
+              className="span-button delete-button"
+              onClick={() => deleteWorkspace(ws.id)}
+            >
+              Delete
             </button>
             <span>{ws.name}</span>
           </div>

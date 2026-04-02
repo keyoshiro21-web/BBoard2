@@ -1,7 +1,5 @@
 import { FC } from "react";
-import { LeftCardButton } from "../buttons/LeftCardButton";
-import { RightCardButton } from "../buttons/RightCardButton";
-import { RMVButton } from "../buttons/RMVButton";
+import { ActionButton, ActionButtonType } from "../buttons/ActionButton";
 
 type CardProps = {
   cardText: string;
@@ -19,9 +17,13 @@ export const Card: FC<CardProps> = ({
   return (
     <div className="card">
       {cardText}
-      {onLeft && <LeftCardButton onClick={onLeft} />}
-      {onRight && <RightCardButton onClick={onRight} />}
-      <RMVButton onClick={onRemove} />
+      {onLeft && (
+        <ActionButton type={ActionButtonType.MoveCardLeft} onClick={onLeft} />
+      )}
+      {onRight && (
+        <ActionButton type={ActionButtonType.MoveCardRight} onClick={onRight} />
+      )}
+      <ActionButton type={ActionButtonType.RemoveCard} onClick={onRemove} />
     </div>
   );
 };
